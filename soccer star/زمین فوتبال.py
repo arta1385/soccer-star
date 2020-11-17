@@ -17,18 +17,6 @@ toop=pygame.transform.scale(toop,(40,50))
 #فونت ها
 font=pygame.font.SysFont("Abril fatface",30)
 #مختصات مهره ها
-player1_x=[40,300,190,190]
-player2_x=[860,600,710,710]
-player1_y=[340,340,120,570]
-player2_y=[340,340,120,570]
-toop_x=480
-toop_y=380
-v_toop_x=2
-v_toop_y=5
-v_player1_x=[0,0,0,0]
-v_player2_x=[0,0,0,0]
-v_player1_y=[0,0,0,0]
-v_player2_y=[0,0,0,0]
 class player:
     def __init__(self,x,y,vx,vy):
         self.x=x
@@ -52,14 +40,28 @@ players_b.append(player(600,340,0,0))
 players_b.append(player(710,120,0,0))
 
 players_b.append(player(710,570,0,0))
+class ball:
+    def __init__(self,tx,ty,tvx,tvy):
+        self.tx=tx
+        self.ty=ty
+        self.tvx=tvx
+        self.tvy=tvy
+ball1=ball(480,380,5,2)
+print(ball1.tx)
 
 #تابع برخورد
-def  barkhord(player1_x , player2_x , player1_y , player2_y , toop_x , toop_y , v_toop_x , v_toop_y):
+def  barkhord(players_r , players_b  ,ball1):
     for i in range(0,4):
-        if (player1_x[i] < toop_x < player1_x[i] - 100 and player1_y[i] < toop_y < player1_y[i] - 120) or (player2_x[i] < toop_x < player2_x[i] + 100 and player2_y[i] < toop_y < player2_y[i] + 120) or (toop_y == 50) or (toop_y == 600) or (toop_x == 0) or (toop_x == 960):
-            v_toop_x = - v_toop_x
-            v_toop_y = - v_toop_y
-    return(v_toop_x,v_toop_y)
+        if (players_r[i].x < ball1.tx <players_r[i].x -100 and players_r[i].y < ball1.ty < players_r[i].y-120) or (players_b[i].x < ball1.tx <players_b[i].x + 100 and players_b[i].y < ball1.ty < players_b[i].y +120):
+            ball1.tvy =-ball1.tvy
+            ball1.tvx=-ball1.tvx
+    return(ball1.tvx,ball1.tvy)
+def  barkhord2(ball1):
+    if ball1.tx >= 1000 or ball1.tx <=0 or ball1.ty>=700 or ball1.ty<= 0:
+        ball1.tvx=-ball1.tvx
+        ball1.tvy=-ball1.tvy
+
+    return(ball1.tvx,ball1.tvy)
 #ورودي ها
 shomare=5
 turn=random.randint(1,2)
@@ -82,17 +84,17 @@ while not done:
         if k.type==pygame.MOUSEBUTTONDOWN:
             xm,ym=k.pos
             for i in range(0,4):
-                if nobat=="Real madrid" and player2_x[i]<xm<player2_x[i]+100 and player2_y[i]<ym<player2_y[i]+120 or nobat=="Barcelona" and player1_x[i]<xm<player1_x[i]+100 and player1_y[i]<ym<player1_y[i]+120:
+                if nobat=="Real madrid" and players_b[i].x<xm<players_b[i].x+100 and players_b[i].y<ym<players_b[i].y+120 or nobat=="Barcelona" and players_r[i].x <xm<players_r[i].x+100 and players_r[i].y<ym<players_r[i].y+120:
                     wait_sound.play()
                 #پوزيشن دايره براي بارسا
-                if player1_x[i]<xm<player1_x[i]+100 and player1_y[i]<ym<player1_y[i]+120 and turn%2==0:
+                if players_r[i].x<xm<players_r[i].x+100 and players_r[i].y<ym<players_r[i].y+120 and turn%2==0:
                     shomare=i
                     turn+=1
                     nobat="Barcelona"
                     clk1=1
                     start_line=[xm,ym]
                 #پوزيشن دايره براي مادريد 
-                if player2_x[i]<xm<player2_x[i]+100 and player2_y[i]<ym<player2_y[i]+120 and turn%2==1:
+                if players_b[i].x<xm<players_b[i].x+100 and players_b[i].y<ym<players_b[i].y+120 and turn%2==1:
                     shomare=i
                     turn+=1
                     nobat="Real madrid"
@@ -107,9 +109,10 @@ while not done:
             #power=((start_line[0]-end_line[0])**2+(start_line[1]-end_line[1])**2)**0.5
             clk1=0
     # updates
-    toop_x=toop_x+v_toop_x
-    toop_y=toop_y+v_toop_y
-    (v_toop_x,v_toop_y)=barkhord(player1_x , player2_x , player1_y , player2_y , toop_x , toop_y , v_toop_x , v_toop_y)
+    ball1.tx=ball1.tx+ball1.tvx
+    ball1.ty=ball1.ty+ball1.tvy
+    (ball1.tvx,ball1.tvy)=barkhord(players_r , players_b , ball1)
+    (ball1.tvx,ball1.tvy)=barkhord2(ball1)
     nobat_ki=font.render("It's "+str(nobat)+" turn",True,(0,0,0))
     t_real=font.render("Real madrid : "+str(goal_real),True,(0,0,0))
     t_barsa=font.render("Barcelona : "+str(goal_barsa),True,(0,0,0))
@@ -118,15 +121,15 @@ while not done:
     disp.blit(zamin,(0,50))
     for i in range(0,4):
         #کشيدن مهره ها
-        disp.blit(real,(player1_x[i],player1_y[i]))
-        disp.blit(barsa,(player2_x[i],player2_y[i]))
+        disp.blit(real,(players_r[i].x,players_r[i].y))
+        disp.blit(barsa,(players_b[i].x,players_b[i].y))
         #کدام مهره
         if shomare==i and turn%2==1:
-            pygame.draw.circle(disp,(0,0,0),(player1_x[i]+50,player1_y[i]+60),53,2)
+            pygame.draw.circle(disp,(0,0,0),(players_r[i].x+50,players_r[i].y+60),53,2)
         if shomare==i and turn%2==0:
-            pygame.draw.circle(disp,(0,0,0),(player2_x[i]+50,player2_y[i]+60),53,2)
+            pygame.draw.circle(disp,(0,0,0),(players_b[i].x+50,players_b[i].y+60),53,2)
     #کشيدن توپ
-    disp.blit(toop,(toop_x,toop_y))
+    disp.blit(toop,(ball1.tx,ball1.ty))
     #کشيدن نوشته ها
     disp.blit(nobat_ki,(430,15))
     disp.blit(t_real,(20,15))
